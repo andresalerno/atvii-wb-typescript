@@ -1,55 +1,73 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-import { Component } from "react";
-import 'materialize-css/dist/css/materialize.min.css'
-import M from 'materialize-css'
+import React, { Component } from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { useNavigate } from 'react-router-dom';
 
-type props = {
-    tema: string,
-    botoes: string[],
-    seletorView: Function
-}
+type BarraNavegacaoProps = {
+    tema?: string;
+    botoes: { texto: string; rota: string; icone: string, submenus?: { texto: string; rota: string }[] }[];
+    navigate: (path: string) => void;
+};
 
-export default class BarraNavegacao extends Component<props> {
-    constructor(props: props | Readonly<props>) {
-        super(props)
-        this.gerarListaBotoes = this.gerarListaBotoes.bind(this)
-    }
-
-    componentDidMount() {
-        document.addEventListener('DOMContentLoaded', function () {
-            let elems = document.querySelectorAll('.sidenav');
-            M.Sidenav.init(elems)
-        });
-    }
+class BarraNavegacao extends Component<BarraNavegacaoProps> {
+    static defaultProps = {
+        tema: 'navbar-dark bg-primary' // Define a cor azul para a barra de navegação usando classes Bootstrap
+    };
 
     gerarListaBotoes() {
-        if (this.props.botoes.length <= 0) {
-            return <></>
-        } else {
-            let lista = this.props.botoes.map(valor =>
-                <li key={valor}><a onClick={(e) => this.props.seletorView(valor, e)}>{valor}</a></li>
-            )
-            return lista
-        }
+        return this.props.botoes.map((botao) => (
+            <li key={botao.texto} className="nav-item">
+                <a
+                    className="nav-link"
+                    onClick={() => this.props.navigate(botao.rota)}
+                    style={{ cursor: 'pointer', color: '#ffffff' }}
+                >
+                    <i className={`bi bi-${botao.icone}`}></i> {botao.texto}
+                </a>
+            </li>
+        ));
     }
 
     render() {
-        let estilo = `${this.props.tema}`
         return (
             <>
-                <nav className={estilo}>
-                    <div className="nav-wrapper">
-                        <a className="brand-logo">WB</a>
-                        <a data-target="mobile-menu" className="sidenav-trigger"><i className="material-icons">menu</i></a>
-                        <ul className="right hide-on-med-and-down">
-                            {this.gerarListaBotoes()}
-                        </ul>
+                <nav className={`navbar navbar-expand-lg ${this.props.tema}`}>
+                    <div className="container-fluid">
+                        <a
+                            className="navbar-brand"
+                            onClick={() => this.props.navigate('/')}
+                            style={{ cursor: 'pointer', color: '#ffffff' }}
+                        >
+                            World Beauty
+                        </a>
+                        <button
+                            className="navbar-toggler"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#navbarNav"
+                            aria-controls="navbarNav"
+                            aria-expanded="false"
+                            aria-label="Toggle navigation"
+                        >
+                            <span className="navbar-toggler-icon"></span>
+                        </button>
+                        <div className="collapse navbar-collapse" id="navbarNav">
+                            <ul className="navbar-nav ms-auto">
+                                {this.gerarListaBotoes()}
+                            </ul>
+                        </div>
                     </div>
                 </nav>
-                <ul className="sidenav" id="mobile-menu">
-                    {this.gerarListaBotoes()}
-                </ul>
             </>
-        )
+        );
     }
 }
+
+// Função para fornecer a função `navigate` ao `BarraNavegacao`
+function withRouter(Component: any) {
+    return function ComponentWithRouterProp(props: any) {
+        const navigate = useNavigate();
+        return <Component {...props} navigate={navigate} />;
+    };
+}
+
+export default withRouter(BarraNavegacao);
